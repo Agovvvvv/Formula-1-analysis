@@ -1,156 +1,158 @@
-# Progetto IDS: Analisi della Correlazione Qualifica-Gara in Formula 1 e Impatto della Tipologia di Circuito
+# IDS Project: Analysis of the Qualifying-Race Correlation in Formula 1 and the Impact of Circuit Type
 
-**Autore:** Nicolò Calandra
+**Author:** Nicolò Calandra
 
-## 1. Introduzione
+## 1. Introduction
 
-Questo progetto si addentra nell'analisi dei dati storici della Formula 1 (dal 1950 al 2024) con l'obiettivo principale di studiare la **correlazione tra la posizione ottenuta dai piloti in qualifica e il loro piazzamento finale in gara**. Un focus cruciale dell'analisi è determinare come questa correlazione sia modulata dalla **tipologia del circuito**.
+This project delves into the analysis of historical Formula 1 data (from 1950 to 2024) with the main objective of studying the **correlation between the position obtained by drivers in qualifying and their final placement in the race**. A crucial focus of the analysis is to determine how this correlation is modulated by the **type of circuit**.
 
-Attraverso l'esplorazione dei dati, test statistici e lo sviluppo di un modello di regressione logistica, cerchiamo di comprendere se e come le caratteristiche intrinseche di un tracciato (classificato come Tecnico, ad Alta Velocità o Misto) influenzino l'importanza strategica della posizione di partenza sul risultato della competizione.
+Through data exploration, statistical tests, and the development of a logistic regression model, we aim to understand if and how the intrinsic characteristics of a track (classified as Technical, High-Speed, or Mixed) influence the strategic importance of the starting position on the competition's outcome.
 
-## 2. Tipologie di Circuito Definite
+## 2. Defined Circuit Types
 
-Per condurre un'analisi mirata, i circuiti di Formula 1 sono stati classificati in tre categorie principali, basate sulle loro caratteristiche predominanti:
+To conduct a targeted analysis, Formula 1 circuits have been classified into three main categories, based on their predominant characteristics:
 
-1.  **Circuito Tecnico:** Caratterizzato da un elevato numero di curve e sezioni a bassa velocità, dove l'abilità di guida del pilota e l'agilità della vettura sono fattori determinanti.
-2.  **Circuito ad Alta Velocità:** Tracciati con lunghi rettilinei e poche curve impegnative, dove la potenza del motore e l'efficienza aerodinamica giocano un ruolo preponderante.
-3.  **Circuito Misto:** Circuiti che offrono una combinazione bilanciata di sezioni tecniche guidate e tratti ad alta velocità, richiedendo un compromesso nell'assetto della vettura e una versatilità da parte del pilota.
+1.  **Technical Circuit:** Characterized by a high number of corners and low-speed sections, where the driver's skill and the car's agility are determining factors.
+2.  **High-Speed Circuit:** Tracks with long straights and few challenging corners, where engine power and aerodynamic efficiency play a major role.
+3.  **Mixed Circuit:** Circuits that offer a balanced combination of technical sections and high-speed straights, requiring a compromise in the car's setup and versatility from the driver.
 
-*(La classificazione specifica usata nel progetto è documentata nel file `f1db-circuits.csv` arricchito).*
+*(The specific classification used in the project is documented in the enriched `f1db-circuits.csv` file).*
 
-## 3. Dataset Utilizzato
+## 3. Dataset Used
 
-L'analisi si fonda sul dataset **F1DB**, una raccolta completa di informazioni storiche sulla Formula 1. I dati grezzi in formato CSV, utilizzati per questo studio, sono localizzati nella cartella `f1db-csv/` e includono:
+The analysis is based on the **F1DB** dataset, a comprehensive collection of historical Formula 1 information. The raw CSV data used for this study are located in the `f1db-csv/` folder and include:
 
-*   `f1db-circuits.csv`: Informazioni dettagliate sui circuiti. **Questo file è stato da noi arricchito** con una colonna `track_type` contenente la classificazione del circuito (Tecnico, Alta Velocità, Misto) secondo le definizioni sopra.
-*   `f1db-races.csv`: Dettagli generali su ogni singola gara disputata.
-*   `f1db-races-race-results.csv`: Risultati finali delle gare per ogni pilota, incluse posizioni di partenza e di arrivo.
-*   `f1db-races-driver-standings.csv`: Classifica generale dei piloti aggiornata prima di ogni gara, utilizzata per derivare una feature rappresentativa della "forma" o performance storica del pilota.
+*   `f1db-circuits.csv`: Detailed information about the circuits. **This file has been enriched by us** with a `track_type` column containing the circuit classification (Technical, High-Speed, Mixed) according to the definitions above.
+*   `f1db-races.csv`: General details about each race held.
+*   `f1db-races-race-results.csv`: Final race results for each driver, including starting and finishing positions.
+*   `f1db-races-driver-standings.csv`: Overall driver standings updated before each race, used to derive a feature representing the driver's "form" or historical performance.
 
-## 4. Struttura del Progetto
+## 4. Project Structure
 
 ```
 Formula-1-analysis/
-├── f1db-csv/                 # Cartella contenente i file CSV del dataset
+├── f1db-csv/                 # Folder containing the dataset's CSV files
 │   ├── f1db-circuits.csv
 │   ├── f1db-races.csv
 │   ├── f1db-races-race-results.csv
 │   ├── f1db-races-driver-standings.csv
-│   ├── test-tecnico.csv          # File CSV per testare il modello su circuiti tecnici (esempio)
-│   ├── test-alta-velocita.csv    # File CSV per testare il modello su circuiti veloci (esempio)
-│   └── test-misto.csv            # File CSV per testare il modello su circuiti misti (esempio)
-├── images/                   # Cartella contenente le immagini generate
-├── README.md                 # Questo file
-└── progetto.ipynb            # Jupyter Notebook con l'analisi completa
+│   ├── test-tecnico.csv          # CSV file to test the model on technical circuits (example)
+│   ├── test-alta-velocita.csv    # CSV file to test the model on high-speed circuits (example)
+│   └── test-misto.csv            # CSV file to test the model on mixed circuits (example)
+├── images/                   # Folder containing generated images
+├── README.md                 # This file
+└── progetto.ipynb            # Jupyter Notebook with the complete analysis
 
 ```
 
-## 5. Requisiti e Installazione
+## 5. Requirements and Installation
 
-Per eseguire l'analisi contenuta nel notebook `progetto.ipynb`, è necessario avere Python 3.x e le seguenti librerie installate:
+To run the analysis contained in the `progetto.ipynb` notebook, you need Python 3.x and the following libraries installed:
 
-*   `pandas` (per la manipolazione dei dati)
-*   `numpy` (per calcoli numerici)
-*   `matplotlib` (per la creazione di grafici)
-*   `seaborn` (per visualizzazioni statistiche avanzate)
-*   `scipy` (per test statistici)
-*   `scikit-learn` (per il modello di machine learning)
-*   `jupyter` (per eseguire il notebook)
+*   `pandas` (for data manipulation)
+*   `numpy` (for numerical calculations)
+*   `matplotlib` (for creating plots)
+*   `seaborn` (for advanced statistical visualizations)
+*   `scipy` (for statistical tests)
+*   `scikit-learn` (for the machine learning model)
+*   `jupyter` (to run the notebook)
 
-Puoi installare tutte le dipendenze necessarie utilizzando `pip` e il file (da creare) `requirements.txt`:
+You can install all the necessary dependencies using `pip` and the (to be created) `requirements.txt` file:
 
 ```bash
 pip install -r requirements.txt
 ```
-Oppure, singolarmente:
+
+Alternatively, individually:
+
 ```bash
 pip install pandas numpy matplotlib seaborn scipy scikit-learn jupyter
 ```
 
-## 6. Come Eseguire l'Analisi
+## 6. How to Run the Analysis
 
-1.  **Clonare il Repository:**
+1.  **Clone the Repository:**
     ```bash
-    # Esempio: git clone https://github.com/tuo-username/Formula-1-analysis.git
+    # Example: git clone https://github.com/your-username/Formula-1-analysis.git
     # cd Formula-1-analysis
     ```
-2.  **Verificare il Dataset:** Assicurati che la cartella `f1db-csv/` con i relativi file CSV sia presente nella directory principale del progetto.
-3.  **Installare le Dipendenze:** Segui le istruzioni nella sezione "Requisiti e Installazione".
-4.  **Avviare Jupyter:** Apri ed esegui il notebook `progetto.ipynb` tramite Jupyter Notebook o Jupyter Lab:
+2.  **Verify the Dataset:** Ensure the `f1db-csv/` folder with its CSV files is present in the main project directory.
+3.  **Install Dependencies:** Follow the instructions in the "Requirements and Installation" section.
+4.  **Start Jupyter:** Open and run the `progetto.ipynb` notebook via Jupyter Notebook or Jupyter Lab:
     ```bash
     jupyter notebook progetto.ipynb
     ```
-    o
+    or
     ```bash
     jupyter lab progetto.ipynb
     ```
-    Esegui le celle del notebook in sequenza.
+    Run the notebook cells in sequence.
 
-## 7. Sommario dell'Analisi e Risultati Chiave
+## 7. Analysis Summary and Key Results
 
-Il notebook `progetto.ipynb` documenta l'intero processo analitico, dalla preparazione dei dati alla modellazione. Di seguito, un riepilogo dei passaggi principali e dei risultati emersi.
+The `progetto.ipynb` notebook documents the entire analytical process, from data preparation to modeling. Below is a summary of the main steps and findings.
 
-### 7.1. Preparazione e Pulizia dei Dati
-*   Caricamento dei diversi CSV e fusione in un dataframe analitico principale (`df`).
-*   Gestione dei valori mancanti e conversione dei tipi di dati.
-*   Creazione di feature aggiuntive, come `podio` (variabile target binaria) e `classifica_pre_gara_rank`.
-*   Filtraggio dei dati per includere solo le gare a partire dall'anno 2000, per focalizzarsi su ere più moderne e consistenti della F1.
+### 7.1. Data Preparation and Cleaning
+*   Loading the various CSVs and merging them into a main analytical dataframe (`df`).
+*   Handling missing values and converting data types.
+*   Creating additional features, such as `podio` (binary target variable) and `classifica_pre_gara_rank` (pre-race standings rank).
+*   Filtering data to include only races from the year 2000 onwards, to focus on more modern and consistent eras of F1.
 
-### 7.2. Analisi Esplorativa dei Dati (EDA)
+### 7.2. Exploratory Data Analysis (EDA)
 
-L'EDA si è concentrata sulla comprensione delle distribuzioni e delle relazioni tra le variabili chiave, segmentate per tipo di circuito.
+The EDA focused on understanding the distributions and relationships between key variables, segmented by circuit type.
 
-*   **Distribuzione delle Posizioni Finali:**
-    *   Sono stati generati istogrammi e box plot per visualizzare la distribuzione delle posizioni finali dei piloti.
-    *   **[Placeholder per Grafico: Istogramma/Box Plot delle Posizioni Finali per Tipo di Circuito]**
-        *   *Commento*: Questi grafici hanno rivelato che [breve descrizione di cosa si osserva, es. i circuiti Tecnici mostrano una mediana di posizione finale leggermente migliore per i piloti partiti davanti, o una minore dispersione dei risultati].
-*   **Confronto Media vs. Mediana della Posizione Finale:**
-    *   L'analisi della differenza tra media e mediana della posizione finale ha indicato la presenza di asimmetria e potenziali outlier, con differenze più marcate per circuiti ad Alta Velocità e Misti, suggerendo una maggiore dispersione verso posizioni di arrivo più alte (peggiori) in questi contesti.
+*   **Distribution of Final Positions:**
+    *   Histograms and box plots were generated to visualize the distribution of drivers' final positions.
+    *   **[Placeholder for Graph: Histogram/Box Plot of Final Positions by Circuit Type]**
+        *   *Comment*: These graphs revealed that [brief description of what is observed, e.g., Technical circuits show a slightly better median final position for drivers starting at the front, or less dispersion in results].
+*   **Comparison of Mean vs. Median of Final Position:**
+    *   The analysis of the difference between the mean and median of the final position indicated the presence of skewness and potential outliers, with more marked differences for High-Speed and Mixed circuits, suggesting greater dispersion towards higher (worse) finishing positions in these contexts.
     ![alt text](images/mean_median.png)
 
-*   **Analisi "OLAP Style" - Arrivi sul Podio:**
-    *   È stata esaminata la percentuale di arrivi sul podio in base alla posizione di partenza e al tipo di circuito.
+*   **"OLAP Style" Analysis - Podium Finishes:**
+    *   The percentage of podium finishes based on starting position and circuit type was examined.
     ![alt text](images/podium_percentage.png)
-    *Commento*: Questa analisi ha evidenziato come, ad esempio, sui circuiti Tecnici, partire nelle primissime file sembri offrire un vantaggio più marcato per l'accesso al podio rispetto ai circuiti di Alta Velocità.
+    *Comment*: This analysis highlighted how, for example, on Technical circuits, starting in the very first rows seems to offer a more marked advantage for reaching the podium compared to High-Speed circuits.
 
-### 7.3. Test Statistici
-*   Sono stati eseguiti test t (o test non parametrici equivalenti, se le assunzioni non fossero rispettate) per confrontare statisticamente le medie delle posizioni finali tra diverse posizioni di partenza (es. P1 vs P2, P2 vs P3) all'interno di ciascuna categoria di circuito.
-*   *Risultato Chiave*: Questi test hanno generalmente confermato che partire più avanti è associato a una posizione finale media significativamente migliore. L'entità di questa differenza, tuttavia, mostra variazioni a seconda del tipo di circuito.
+### 7.3. Statistical Tests
+*   T-tests (or equivalent non-parametric tests, if assumptions were not met) were performed to statistically compare the means of final positions between different starting positions (e.g., P1 vs P2, P2 vs P3) within each circuit category.
+*   *Key Result*: These tests generally confirmed that starting further ahead is associated with a significantly better average final position. The magnitude of this difference, however, shows variations depending on the circuit type.
 
-### 7.4. Modello di Regressione Logistica
+### 7.4. Logistic Regression Model
 
-È stato sviluppato un modello di regressione logistica per predire la probabilità che un pilota termini la gara **sul podio** (`podio = 1`).
+A logistic regression model was developed to predict the probability of a driver finishing the race **on the podium** (`podio = 1`).
 
-*   **Features Selezionate:**
-    *   `posizione_partenza` (numerica)
-    *   `classifica_pre_gara_rank` (numerica, usata come proxy per la "forma" e l'abilità storica del pilota)
-    *   Tipo di circuito (categorica, gestita tramite one-hot encoding: `circuito_Tecnico`, `circuito_Alta_velocita`, `circuito_Misto`).
-*   **Variabile Target:** `podio` (binaria: 1 se il pilota è arrivato tra i primi tre, 0 altrimenti).
-*   **Valutazione del Modello:**
-    *   Il dataset è stato suddiviso in training set e test set.
-    *   Le performance del modello sono state valutate utilizzando metriche appropriate per la classificazione:
-        *   **Accuracy:** 0.897 (confrontata con l'accuracy di un modello nullo).
-        *   **Matrice di Confusione:**
+*   **Selected Features:**
+    *   `posizione_partenza` (numeric)
+    *   `classifica_pre_gara_rank` (numeric, used as a proxy for the driver's "form" and historical skill)
+    *   Circuit type (categorical, handled via one-hot encoding: `circuito_Tecnico`, `circuito_Alta_velocita`, `circuito_Misto`).
+*   **Target Variable:** `podio` (binary: 1 if the driver finished in the top three, 0 otherwise).
+*   **Model Evaluation:**
+    *   The dataset was split into a training set and a test set.
+    *   The model's performance was evaluated using appropriate classification metrics:
+        *   **Accuracy:** 0.897 (compared to the accuracy of a null model).
+        *   **Confusion Matrix:**
             ![alt text](images/confusion_matrix.png)
-        *   **Precisione (Precision):** 0.603
-        *   **Richiamo (Recall):** 0.626
+        *   **Precision:** 0.603
+        *   **Recall:** 0.626
         *   **F1-Score:** 0.614
-    *   *Commento*: Il modello ha dimostrato una buona capacità predittiva, superando il modello nullo.
-*   **Test su Nuovi Dati:** Il modello addestrato è stato utilizzato per effettuare predizioni su set di dati di test appositamente creati (`test-tecnico.csv`, `test-alta-velocita.csv`, `test-misto.csv`), simulando scenari di gara reali e valutando la coerenza delle previsioni con le aspettative qualitative.
+    *   *Comment*: The model demonstrated good predictive ability, outperforming the null model.
+*   **Testing on New Data:** The trained model was used to make predictions on specially created test datasets (`test-tecnico.csv`, `test-alta-velocita.csv`, `test-misto.csv`), simulating real race scenarios and evaluating the consistency of the predictions with qualitative expectations.
 
-## 8. Conclusioni Principali
+## 8. Main Conclusions
 
-L'analisi condotta e i risultati del modello di regressione logistica suggeriscono che:
+The analysis conducted and the results of the logistic regression model suggest that:
 
-1.  La **posizione di partenza è un fattore statisticamente significativo** e cruciale nel determinare la posizione finale e la probabilità di raggiungere il podio in Formula 1.
-2.  L'**importanza relativa della posizione di partenza varia in modo apprezzabile con la tipologia di circuito**: sui tracciati tecnici, un'ottima qualifica sembra tradursi in un vantaggio più consolidato rispetto ai circuiti ad alta velocità, dove altri fattori possono rimescolare maggiormente le carte.
-3.  La **performance storica e la "forma" del pilota** (approssimata dalla sua classifica pre-gara) costituiscono un altro predittore rilevante per il successo in gara.
-4.  Il modello di regressione logistica, sebbene semplice, si è dimostrato capace di catturare queste dinamiche e fornire **previsioni utili**, fungendo da solida baseline per eventuali modelli più complessi.
+1.  The **starting position is a statistically significant** and crucial factor in determining the final position and the probability of reaching the podium in Formula 1.
+2.  The **relative importance of the starting position varies appreciably with the type of circuit**: on technical tracks, an excellent qualifying seems to translate into a more consolidated advantage compared to high-speed circuits, where other factors can shuffle the order more.
+3.  The **historical performance and "form" of the driver** (approximated by their pre-race classification) constitute another relevant predictor for success in the race.
+4.  The logistic regression model, although simple, proved capable of capturing these dynamics and providing **useful predictions**, serving as a solid baseline for any more complex models.
 
-## 9. Possibili Sviluppi Futuri
+## 9. Possible Future Developments
 
-*   **Ingegnerizzazione di Nuove Feature:** Esplorare l'aggiunta di variabili come le condizioni meteorologiche, l'affidabilità specifica del team/motore in quella stagione, l'esperienza del pilota sul circuito specifico.
-*   **Modelli Alternativi:** Testare algoritmi di machine learning più avanzati (es. Random Forest, Gradient Boosting, Reti Neurali) per valutare se possono offrire un incremento di performance predittiva.
-*   **Analisi Temporale più Granulare:** Studiare come le correlazioni siano cambiate attraverso ere regolamentari diverse all'interno del periodo post-2000.
-*   **Analisi di Segmenti Specifici:** Approfondire l'analisi per specifiche fasce di piloti (es. top team vs. midfield) o per specifiche posizioni di arrivo oltre il podio.
-*   **Deployment Semplificato:** Creare una piccola applicazione web (es. con Streamlit o Flask) per interagire con il modello e fare previsioni su ipotetiche gare.
+*   **New Feature Engineering:** Explore adding variables such as weather conditions, specific team/engine reliability in that season, and driver experience on the specific circuit.
+*   **Alternative Models:** Test more advanced machine learning algorithms (e.g., Random Forest, Gradient Boosting, Neural Networks) to assess if they can offer an increase in predictive performance.
+*   **More Granular Temporal Analysis:** Study how correlations have changed across different regulatory eras within the post-2000 period.
+*   **Specific Segment Analysis:** Deepen the analysis for specific groups of drivers (e.g., top teams vs. midfield) or for specific finishing positions beyond the podium.
+*   **Simplified Deployment:** Create a small web application (e.g., with Streamlit or Flask) to interact with the model and make predictions on hypothetical races.
